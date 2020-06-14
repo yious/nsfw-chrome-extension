@@ -1,9 +1,9 @@
 {
-  "name": "TensorFlow Image Recognition Chrome Extension",
+  "name": "Auto SFW",
   "version": "0.1",
-  "description": "TensorFlow chrome extension for using pretrained MobileNet NN to analyze images on web pages!",
-  "homepage_url": "https://www.polarspin.com/",
-  "author": "Jouni Kontinen",
+  "description": "TensorFlow chrome extension for hiding nsfw content",
+  "homepage_url": "https://example.com",
+  "author": "",
   "permissions": [
     "activeTab",
     "declarativeContent",
