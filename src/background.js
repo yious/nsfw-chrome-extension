@@ -1,5 +1,3 @@
-import * as nsfwjs from "nsfwjs"
-
 function loadImage(url) {
     return new Promise((resolve) => {
         let image = document.createElement("img");
@@ -13,8 +11,13 @@ function loadImage(url) {
 class BackgroundProcess
 {
     constructor() {
-        this.model = this.loadModel();
+        this.loadDependencies();
         this.addListeners()
+        this.loadModel();
+    }
+
+    loadDependencies() {
+        
     }
 
     addListeners() {
@@ -27,7 +30,9 @@ class BackgroundProcess
     }
 
     async loadModel() {
-        this.model = nsfwjs.load(MODEL_PATH);
+        let model_url = chrome.extension.getURL('models/quant_nsfw_mobilenet/');
+        console.log(model_url)
+        this.model = nsfwjs.load(model_url);
     }
 
     isSfw(predictions) {
@@ -35,19 +40,24 @@ class BackgroundProcess
         return !(topPrediction.className in ['Porn', 'Sexy'] && topPrediction.probabilty > 0.6);
     }
 
-    async processSorce(url) {
+    async processSource(url) {
         let image = loadImage(url);
-        await Promise.all(this.model, image);
-        let predictions = this.model.classify(image);
+        // await Promise.all(this.model, image);
+        let cur_model = await this.model;
+        let cur_image = await image;
+        console.log(cur_model, cur_image);
+        let predictions = await cur_model.classify(cur_image);
         console.log(url, predictions);
         return this.isSfw(predictions);
     }
 }
 
 Object.defineProperty(BackgroundProcess, 'MODEL_PATH', {
-    value: null,
+    value: "",
     writable : false,
     enumerable : true,
     configurable : false
 });
 BackgroundProcess.MODEL_PATH; 
+
+let proc = new BackgroundProcess();

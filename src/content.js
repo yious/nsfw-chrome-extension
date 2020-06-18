@@ -1,5 +1,3 @@
-const { image } = require("@tensorflow/tfjs");
-
 function getAllImages() {
   let images = [...document.getElementsByTagName("img")];
 }
