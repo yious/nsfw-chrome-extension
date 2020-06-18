@@ -1,11 +1,26 @@
 function getAllImages() {
   let images = [...document.getElementsByTagName("img")];
+  return images;
+}
+
+function blurImage(image, text) {
+  image.style.filter = "blur(2.5em)";
+}
+
+function unblurImage(image) {
+  image.style.filter = "";
 }
 
 function main() {
-  var images = getAllImages();
+  let images = getAllImages();
   for (const image of images) {
-    chrome.runtime.sendMessage({url : image.src});
+    blurImage(image);
+    chrome.runtime.sendMessage({url : image.src}, (response) => {
+      console.log(image.src, response);
+      if (response.isSfw === true) {
+        unblurImage(image); 
+      }
+    })
   }
 }
 
