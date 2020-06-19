@@ -37,7 +37,6 @@ class BackgroundProcess
         chrome.runtime.onMessage.addListener(
             (request, sender, sendResponse) => {
                 (async () => {
-                    console.log("from a content script:" + sender.tab.url);
                     const isSfw = await this.processSource(request.url);
                     sendResponse({isSfw: isSfw});
                 })();
