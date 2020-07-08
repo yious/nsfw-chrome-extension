@@ -7,15 +7,13 @@
   "permissions": [
     "activeTab",
     "declarativeContent",
-    "webRequest",
-    "webRequestBlocking",
     "<all_urls>",
     "storage",
     "tabs"
   ],
   "background": {
     "page": "src/background.html",
-    "persistent": true
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -28,6 +26,6 @@
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "manifest_version": 2,
   "web_accessible_resources": [
-    "models/*"
+    "public/*"
  ]
 }

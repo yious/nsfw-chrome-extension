@@ -1,9 +1,18 @@
-function loadImage(url) {
-    return new Promise((resolve) => {
-        let image = document.createElement("img");
+class ParsingError extends Error {
+    constructor(message) {
+        super(message)
+    }
+}
+
+function loadImage(url, elementType) {
+    return new Promise((resolve, reject) => {
+        let image = document.createElement(elementType);
         image.addEventListener('load', () => {
             resolve(image);
         });
+        image.addEventListener('error', () => {
+            reject(new ParsingError(`Error loading ${url} as "${elementType}"`));
+        })
         image.src = url;
     });
 }
@@ -16,7 +25,7 @@ class BackgroundProcess
     }
 
     async loadModel() {
-        let model_url = chrome.extension.getURL('models/quant_nsfw_mobilenet/');
+        let model_url = chrome.extension.getURL('public/models/quant_nsfw_mobilenet/');
         this.model = nsfwjs.load(model_url);
     }
 
@@ -25,11 +34,10 @@ class BackgroundProcess
         return !(['Porn', 'Sexy'].includes(topPrediction.className) && topPrediction.probability > 0.6);
     }
 
-    async processSource(url) {
-        let image = await loadImage(url);
+    async processSource(element) {
         let resolved_model = await this.model;
-        let predictions = await resolved_model.classify(image);
-        console.log(url, predictions);
+        let predictions = await resolved_model.classify(element);
+        console.log(element.src, predictions);
         return this.isSfw(predictions);
     }
 
@@ -37,20 +45,25 @@ class BackgroundProcess
         chrome.runtime.onMessage.addListener(
             (request, sender, sendResponse) => {
                 (async () => {
-                    const isSfw = await this.processSource(request.url);
+                    let isSfw = false;
+                    try {
+                        let elementTagName = request.type;
+                        let element = await loadImage(request.url, elementTagName);
+                        isSfw = await this.processSource(element);
+                    }
+                    catch (error) {
+                        if (error instanceof ParsingError) {
+                            isSfw = true;
+                            console.warn(error);
+                        } else {
+                            console.error(error);
+                        }
+                    }
                     sendResponse({isSfw: isSfw});
                 })();
             return true;
         });
     }
 }
-
-Object.defineProperty(BackgroundProcess, 'MODEL_PATH', {
-    value: "",
-    writable : false,
-    enumerable : true,
-    configurable : false
-});
-BackgroundProcess.MODEL_PATH; 
 
 let proc = new BackgroundProcess();
